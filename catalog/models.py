@@ -6,21 +6,43 @@ class User(AbstractUser):
     pass
 
 class Product(models.Model):
-    """Model representing a product instance"""
+    """商品を表すモデル"""
     name = models.CharField(
         max_length=200,
-        help_text="商品名を入力してください"
+        help_text='商品名を入力してください',
+    )
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        help_text='全商品の中にこの商品の一意の識別子',
+    )
+
+    vendor = models.ForeignKey(User, on_delete=models.CASCADE)
+    price = models.PositiveBigIntegerField() # 円で表します
+
+    SALE_STATUS = (
+        ('f', '販売中'),
+        ('s', '販売済み'),
+        ('c', '販売確定'),
+    )
+    status = models.CharField(
+        max_length=1,
+        choices=SALE_STATUS,
+        default='f',
+        help_text='商品の販売ステータス(例：販売中、販売済み)',
     )
 
     def __str__(self):
-        """String for representing the Product"""
+        """商品を表す文字列"""
         return self.name
 
     def get_absolute_url(self):
-        """Returns the url to access a particular product"""
-        return reverse("product-detail", args=[str(self.id)])
+        """特定の商品へのURLをリターンする関数"""
+        return reverse('product-detail', args=[str(self.id)])
 
     class Meta:
-        permissions = [('vendor_status', 'Is a vendor')]
+        permissions = [('vendor_status', '売り手です')]
         default_permissions = ('add', 'change', 'view')
+        # TODO deleteパーミッションを実装する。売り手は自分の商品しか削除できないように
 

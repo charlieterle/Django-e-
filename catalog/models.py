@@ -1,14 +1,24 @@
+import uuid
 from django.db import models
 from django.urls import reverse
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser
 
-class User(AbstractUser):
-    pass
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=40, unique=True)
+    email = models.EmailField(unique=True)
+    given_name = models.CharField(max_length=40)
+    family_name = models.CharField(max_length=40)
+
+    USERNAME_FIELD = 'username'
+    EMAIL_FIELD = 'email'
+    REQUIRED_FIELDS = ['email', 'given_name', 'family_name']
+
 
 class Product(models.Model):
     """商品を表すモデル"""
     name = models.CharField(
         max_length=200,
+        default='商品名未定義',
         help_text='商品名を入力してください',
     )
 
@@ -18,8 +28,12 @@ class Product(models.Model):
         help_text='全商品の中にこの商品の一意の識別子',
     )
 
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.PositiveBigIntegerField() # 円で表します
+    vendor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, 
+        null=True
+    )
+    price = models.PositiveBigIntegerField(default=0) # JPY(円)で表します
 
     SALE_STATUS = (
         ('f', '販売中'),
@@ -30,7 +44,14 @@ class Product(models.Model):
         max_length=1,
         choices=SALE_STATUS,
         default='f',
-        help_text='商品の販売ステータス(例：販売中、販売済み)',
+        help_text='商品の販売ステータス',
+    )
+
+    info = models.CharField(
+        max_length=3000,
+        help_text='商品の詳細',
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

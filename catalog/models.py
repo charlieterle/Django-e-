@@ -1,6 +1,7 @@
+import uuid
 from django.db import models
 from django.urls import reverse
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser
 
 class User(AbstractBaseUser):
     username = models.CharField(max_length=40, unique=True)
@@ -17,6 +18,7 @@ class Product(models.Model):
     """商品を表すモデル"""
     name = models.CharField(
         max_length=200,
+        default='商品名未定義',
         help_text='商品名を入力してください',
     )
 
@@ -26,8 +28,12 @@ class Product(models.Model):
         help_text='全商品の中にこの商品の一意の識別子',
     )
 
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.PositiveBigIntegerField() # JPY(円)で表します
+    vendor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, 
+        null=True
+    )
+    price = models.PositiveBigIntegerField(default=0) # JPY(円)で表します
 
     SALE_STATUS = (
         ('f', '販売中'),
@@ -43,7 +49,9 @@ class Product(models.Model):
 
     info = models.CharField(
         max_length=3000,
-        help_text='商品の詳細'
+        help_text='商品の詳細',
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

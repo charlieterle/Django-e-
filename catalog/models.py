@@ -2,8 +2,16 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 
-class User(AbstractUser):
-    pass
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=40, unique=True)
+    email = models.EmailField(unique=True)
+    given_name = models.CharField(max_length=40)
+    family_name = models.CharField(max_length=40)
+
+    USERNAME_FIELD = 'username'
+    EMAIL_FIELD = 'email'
+    REQUIRED_FIELDS = ['email', 'given_name', 'family_name']
+
 
 class Product(models.Model):
     """商品を表すモデル"""
@@ -19,7 +27,7 @@ class Product(models.Model):
     )
 
     vendor = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.PositiveBigIntegerField() # 円で表します
+    price = models.PositiveBigIntegerField() # JPY(円)で表します
 
     SALE_STATUS = (
         ('f', '販売中'),
@@ -30,7 +38,12 @@ class Product(models.Model):
         max_length=1,
         choices=SALE_STATUS,
         default='f',
-        help_text='商品の販売ステータス(例：販売中、販売済み)',
+        help_text='商品の販売ステータス',
+    )
+
+    info = models.CharField(
+        max_length=3000,
+        help_text='商品の詳細'
     )
 
     def __str__(self):
